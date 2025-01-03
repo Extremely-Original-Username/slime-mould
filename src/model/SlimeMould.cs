@@ -35,11 +35,11 @@ namespace model
         public void step()
         {
             fade(1);
-            moveAgents();
+            updateAgents();
             drawAgents();
         }
 
-        private void moveAgents()
+        private void updateAgents()
         {
             foreach (Agent agent in agents)
             {
