@@ -43,8 +43,8 @@ namespace model
         {
             foreach (Agent agent in agents)
             {
-                agent.position.Item1 += 0.1f;
-                agent.position.Item2 += 0.1f;
+                agent.position.Item1 += 1f;
+                agent.position.Item2 += 1f;
 
                 if ((int)Math.Floor(agent.position.Item1) >= grid.width)
                 {
