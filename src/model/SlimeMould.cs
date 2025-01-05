@@ -48,19 +48,25 @@ namespace model
         {
             foreach (Agent agent in agents)
             {
-                agent.position.Item1 += 1f;
-                agent.position.Item2 += 1f;
+                agent.position.x += 1f;
+                agent.position.y += 1f;
 
-                if ((int)Math.Floor(agent.position.Item1) >= Width)
+                if ((int)Math.Floor(agent.position.x) >= Width)
                 {
-                    agent.position.Item1 = 0;
+                    agent.position.x = 0;
                 }
-                if ((int)Math.Floor(agent.position.Item2) >= Height)
+                if ((int)Math.Floor(agent.position.y) >= Height)
                 {
-                    agent.position.Item2 = 0;
+                    agent.position.y = 0;
                 }
-
-                //TODO: Expand this for the opposite
+                if ((int)Math.Floor(agent.position.x) < 0)
+                {
+                    agent.position.x = Width - 1;
+                }
+                if ((int)Math.Floor(agent.position.y) < 0)
+                {
+                    agent.position.y = Height - 1;
+                }
             }
         }
 

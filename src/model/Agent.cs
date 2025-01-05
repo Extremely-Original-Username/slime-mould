@@ -8,9 +8,9 @@ namespace model
 {
     internal class Agent
     {
-        public (float, float) position;
+        public (float x, float y) position;
         public float rotation;
-        public Agent((float, float) position, float rotation)
+        public Agent((float x, float y) position, float rotation)
         {
             this.position = position;
             this.rotation = rotation;
