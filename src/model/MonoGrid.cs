@@ -54,6 +54,19 @@ namespace model
             return this.grid[x, y];
         }
 
+        public int safeGetValue(int x, int y)
+        {
+            try
+            {
+                validateBounds(x, y);
+
+                return this.grid[x, y];
+            }
+            catch (IndexOutOfRangeException e) { }
+
+            return 0;
+        }
+
         private void validateBounds(int x, int y)
         {
             if (x >= 0 && x < width && y >= 0 && y < height)

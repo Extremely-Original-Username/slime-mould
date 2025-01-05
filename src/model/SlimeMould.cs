@@ -44,12 +44,48 @@ namespace model
             fade(1);
         }
 
+        private int countLookAhead(Agent agent, int angle, int lookCount, float lookaheadGrowth, float lookaheadStart)
+        {
+            int result = 0;
+
+            float current = lookaheadStart;
+            for (int i = 0; i < lookCount; i++)
+            {
+                (int x, int y) position = (
+                    (int)Math.Floor(agent.position.x + (Math.Cos(agent.rotation) + current)), 
+                    (int)Math.Floor(agent.position.y + (Math.Sin(agent.rotation) + current))
+                    );
+
+                result += grid.safeGetValue(position.x, position.y);
+                current += lookaheadGrowth;
+            }
+
+            return result;
+        }
+
         private void updateAgents()
         {
             foreach (Agent agent in agents)
             {
-                agent.position.x += 1f;
-                agent.position.y += 1f;
+                //Update rotation
+                int left = countLookAhead(agent, -45, 8, 1.5f, 1.2f);
+                int ahead = countLookAhead(agent, 0, 8, 1.5f, 1.2f);
+                int right = countLookAhead(agent, 45, 8, 1.5f, 1.2f);
+
+                if (left > right && left > ahead)
+                {
+                    agent.rotation -= 10;
+                }
+                if (right > left && right > ahead)
+                {
+                    agent.rotation += 10;
+                }
+
+                agent.rotation %= 360;
+
+                //Update position
+                agent.position.x += (float)Math.Cos(agent.rotation);
+                agent.position.y += (float)Math.Sin(agent.rotation);
 
                 if ((int)Math.Floor(agent.position.x) >= Width)
                 {
