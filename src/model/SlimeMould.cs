@@ -12,8 +12,13 @@ namespace model
         private MonoGrid grid;
         private List<Agent> agents;
 
+        public int Width { get;  }
+        public int Height { get; }
+
         public SlimeMould(int width, int height, int agents)
         {
+            this.Width = width;
+            this.Height = height;
             this.grid = new MonoGrid(width, height);
 
             Random random = new Random();
@@ -34,9 +39,9 @@ namespace model
 
         public void step()
         {
-            fade(1);
-            updateAgents();
             drawAgents();
+            updateAgents();
+            fade(1);
         }
 
         private void updateAgents()
@@ -46,11 +51,11 @@ namespace model
                 agent.position.Item1 += 1f;
                 agent.position.Item2 += 1f;
 
-                if ((int)Math.Floor(agent.position.Item1) >= grid.width)
+                if ((int)Math.Floor(agent.position.Item1) >= Width)
                 {
                     agent.position.Item1 = 0;
                 }
-                if ((int)Math.Floor(agent.position.Item2) >= grid.height)
+                if ((int)Math.Floor(agent.position.Item2) >= Height)
                 {
                     agent.position.Item2 = 0;
                 }
@@ -69,9 +74,9 @@ namespace model
 
         private void fade(int factor)
         {
-            for (int y = 0; y < this.grid.height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < this.grid.width; x++)
+                for (int x = 0; x < Width; x++)
                 {
                     this.grid.setValue(x, y, Math.Max(this.grid.getValue(x, y) - factor, 0));
                 }

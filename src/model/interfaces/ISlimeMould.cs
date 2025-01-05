@@ -8,6 +8,9 @@ namespace model.interfaces
 {
     public interface ISlimeMould
     {
+        public int Width { get; }
+        public int Height { get; }
+
         public void step();
         public MonoGrid getState();
     }
