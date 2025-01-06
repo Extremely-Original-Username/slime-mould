@@ -51,9 +51,11 @@ namespace model
             float current = lookaheadStart;
             for (int i = 0; i < lookCount; i++)
             {
+                double angleInRadians = agent.rotation * (Math.PI / 180);
+
                 (int x, int y) position = (
-                    (int)Math.Floor(agent.position.x + (Math.Cos(agent.rotation) + current)), 
-                    (int)Math.Floor(agent.position.y + (Math.Sin(agent.rotation) + current))
+                    (int)Math.Floor(agent.position.x + (Math.Cos(angleInRadians) + current)),
+                    (int)Math.Floor(agent.position.y + (Math.Sin(angleInRadians) + current))
                     );
 
                 result += grid.safeGetValue(position.x, position.y);
