@@ -29,7 +29,7 @@ namespace model
             for (int i = 0; i < agents; i++)
             {
                 this.agents.Add(new Agent(
-                    new Position(random.Next(0, width), random.Next(0, height)),
+                    new float2(random.Next(0, width), random.Next(0, height)),
                     random.Next(0, 360))
                     );
             }
@@ -50,7 +50,10 @@ namespace model
         private void updateAgents()
         {
             var texture = GraphicsDevice.GetDefault().AllocateReadOnlyTexture2D<int>(grid.getData());
-            var agentsBuffer = GraphicsDevice.GetDefault().AllocateReadWriteTexture1D<Agent>(agents.ToArray());
+
+            var agentsArray = agents.ToArray(); // Convert List<Agent> to array
+            var agentsBuffer = GraphicsDevice.GetDefault().AllocateReadWriteBuffer<Agent>(agentsArray.Length);
+            agentsBuffer.CopyFrom(agentsArray); // Ensure data is copied correctly
 
             GraphicsDevice.GetDefault().For(agents.Count, new
                 UpdateAgentsShader(agentsBuffer, texture, Width, Height));
@@ -62,7 +65,7 @@ namespace model
         private void drawAgents()
         {
             var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
-            var positions = GraphicsDevice.GetDefault().AllocateReadOnlyTexture1D<int2>(agents.Select(x => new int2((int)Math.Floor(x.position.x), (int)Math.Floor(x.position.y))).ToArray());
+            var positions = GraphicsDevice.GetDefault().AllocateReadOnlyTexture1D<int2>(agents.Select(x => new int2((int)Math.Floor(x.position.X), (int)Math.Floor(x.position.Y))).ToArray());
 
             GraphicsDevice.GetDefault().For(agents.Count, new
                 DrawAgentsShader(positions, texture));
@@ -112,7 +115,7 @@ namespace model
         [AutoConstructor]
         private readonly partial struct UpdateAgentsShader : IComputeShader
         {
-            public readonly ReadWriteTexture1D<Agent> agents;
+            public readonly ReadWriteBuffer<Agent> agents;
             public readonly ReadOnlyTexture2D<int> buffer;
             public readonly int Width;
             public readonly int Height;
@@ -124,17 +127,17 @@ namespace model
                 float current = lookaheadStart;
                 for (int i = 0; i < lookCount; i++)
                 {
-                    double angleInRadians = agent.rotation * (Math.PI / 180);
+                    float angleInRadians = agent.rotation * (MathF.PI / 180);
 
-                    Position position = new Position(
-                        (int)Math.Floor(agent.position.x + (Math.Cos(angleInRadians) + current)),
-                        (int)Math.Floor(agent.position.y + (Math.Sin(angleInRadians) + current))
+                    float2 position = new float2(
+                        MathF.Floor(agent.position.X + (MathF.Cos(angleInRadians) + current)),
+                        MathF.Floor(agent.position.Y + (MathF.Sin(angleInRadians) + current))
                         );
 
                     int value = 0;
-                    if (position.x >= 0 && position.x < Width && position.y >= 0 && position.y < Height)
+                    if (position.X >= 0 && position.X < Width && position.Y >= 0 && position.Y < Height)
                     {
-                        value = buffer[(int)agent.position.x, (int)agent.position.y];
+                        value = buffer[(int)agent.position.X, (int)agent.position.Y];
                     }
                     result += value;
                     current += lookaheadGrowth;
@@ -146,6 +149,8 @@ namespace model
             public void Execute()
             {
                 var agent = agents[ThreadIds.X];
+                float newRotation = agent.rotation;
+                float2 newPosition = agent.position;
 
                 //Update rotation
                 int left = countLookAhead(agent, -45, 8, 1.5f, 1.2f);
@@ -154,35 +159,37 @@ namespace model
 
                 if (left > right && left > ahead)
                 {
-                    agent.rotation -= 10;
+                    newRotation -= 10;
                 }
                 if (right > left && right > ahead)
                 {
-                    agent.rotation += 10;
+                    newRotation += 10;
                 }
 
-                agent.rotation %= 360;
+                newRotation %= 360;
 
                 //Update position
-                agent.position.x += (float)Math.Cos(agent.rotation);
-                agent.position.y += (float)Math.Sin(agent.rotation);
+                newPosition.X += MathF.Cos(agent.rotation);
+                newPosition.Y += MathF.Sin(agent.rotation);
 
-                if ((int)Math.Floor(agent.position.x) >= Width)
+                if ((int)Math.Floor(newPosition.X) >= Width)
                 {
-                    agent.position.x = 0;
+                    newPosition.X = 0;
                 }
-                if ((int)Math.Floor(agent.position.y) >= Height)
+                if ((int)Math.Floor(newPosition.Y) >= Height)
                 {
-                    agent.position.y = 0;
+                    newPosition.Y = 0;
                 }
-                if ((int)Math.Floor(agent.position.x) < 0)
+                if ((int)Math.Floor(newPosition.X) < 0)
                 {
-                    agent.position.x = Width - 1;
+                    newPosition.X = Width - 1;
                 }
-                if ((int)Math.Floor(agent.position.y) < 0)
+                if ((int)Math.Floor(newPosition.Y) < 0)
                 {
-                    agent.position.y = Height - 1;
+                    newPosition.Y = Height - 1;
                 }
+
+                agents[ThreadIds.X] = new Agent(newPosition, newRotation);
             }
         }
     }
