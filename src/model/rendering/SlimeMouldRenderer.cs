@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using FFMediaToolkit;
 using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
+using model.interfaces;
 
 namespace model.rendering
 {
@@ -16,12 +17,12 @@ namespace model.rendering
     {
         private int steps;
         private int fps;
-        private SlimeMould slime;
+        private ISlimeMould slime;
         private PixelFormat format;
         private List<string> files;
         private string outDir;
 
-        public SlimeMouldRenderer(int steps, int fps, SlimeMould slimeMould, string outDir)
+        public SlimeMouldRenderer(int steps, int fps, ISlimeMould slimeMould, string outDir)
         {
             this.steps = steps;
             this.fps = fps;

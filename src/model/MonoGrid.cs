@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -65,6 +66,21 @@ namespace model
             catch (IndexOutOfRangeException e) { }
 
             return 0;
+        }
+
+        public int[,] getData()
+        {
+            return this.grid;
+        }
+
+        public void setData(int[,] data)
+        {
+            if (data.GetLength(0) == grid.GetLength(0) && data.GetLength(1) == grid.GetLength(1))
+            {
+                this.grid = data;
+                return;
+            }
+            throw new IndexOutOfRangeException("Data was an invalid shape");
         }
 
         private void validateBounds(int x, int y)

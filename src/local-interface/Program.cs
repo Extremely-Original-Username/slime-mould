@@ -5,6 +5,7 @@ using FFMediaToolkit;
 using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
 using model.rendering;
+using model.interfaces;
 
 Console.CursorVisible = false;
 Console.WriteLine("Starting sim generation...");
@@ -13,7 +14,7 @@ const string outDir = "results";
 const int width = 1920;
 const int height = 1080;
 const int fps = 20;
-const int length = 10;
+const int length = 1;
 const int agents = 1000;
 
 const int steps = fps * length;
@@ -24,7 +25,7 @@ if (Directory.Exists(outDir))
 }
 Directory.CreateDirectory(outDir);
 
-SlimeMould slime = new SlimeMould(width, height, agents);
+ISlimeMould slime = new GpuSlimeMould(width, height, agents);
 SlimeMouldRenderer renderer = new SlimeMouldRenderer(steps, fps, slime, outDir);
 
 renderer.generateFrames((i) =>
