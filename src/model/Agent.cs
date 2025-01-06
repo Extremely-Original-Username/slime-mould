@@ -6,14 +6,26 @@ using System.Threading.Tasks;
 
 namespace model
 {
-    internal class Agent
+    internal struct Agent
     {
-        public (float x, float y) position;
+        public Position position;
         public float rotation;
-        public Agent((float x, float y) position, float rotation)
+        public Agent(Position position, float rotation)
         {
             this.position = position;
             this.rotation = rotation;
+        }
+    }
+
+    internal struct Position
+    {
+        public float x;
+        public float y;
+
+        public Position(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
         }
     }
 }

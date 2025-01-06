@@ -26,7 +26,7 @@ namespace model
             for (int i = 0; i < agents; i++)
             {
                 this.agents.Add(new Agent(
-                    (random.Next(0, width), random.Next(0, height)), 
+                    new Position(random.Next(0, width), random.Next(0, height)), 
                     random.Next(0, 360))
                     );
             }
@@ -67,8 +67,10 @@ namespace model
 
         private void updateAgents()
         {
-            foreach (Agent agent in agents)
+            for (int i = 0; i < agents.Count; i++)
             {
+                Agent agent = agents[i];
+
                 //Update rotation
                 int left = countLookAhead(agent, -45, 8, 1.5f, 1.2f);
                 int ahead = countLookAhead(agent, 0, 8, 1.5f, 1.2f);
@@ -112,7 +114,7 @@ namespace model
         {
             foreach (Agent agent in agents)
             {
-                this.grid.setValue((int)Math.Floor(agent.position.Item1), (int)Math.Floor(agent.position.Item2), 100);
+                this.grid.setValue((int)Math.Floor(agent.position.x), (int)Math.Floor(agent.position.y), 100);
             }
         }
 

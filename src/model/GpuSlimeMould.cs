@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ComputeSharp;
 using TerraFX.Interop.Windows;
+using System.Numerics;
 
 namespace model
 {
@@ -28,7 +29,7 @@ namespace model
             for (int i = 0; i < agents; i++)
             {
                 this.agents.Add(new Agent(
-                    (random.Next(0, width), random.Next(0, height)),
+                    new Position(random.Next(0, width), random.Next(0, height)),
                     random.Next(0, 360))
                     );
             }
@@ -46,31 +47,106 @@ namespace model
             fade(1);
         }
 
-        private int countLookAhead(Agent agent, int angle, int lookCount, float lookaheadGrowth, float lookaheadStart)
-        {
-            int result = 0;
-
-            float current = lookaheadStart;
-            for (int i = 0; i < lookCount; i++)
-            {
-                double angleInRadians = agent.rotation * (Math.PI / 180);
-
-                (int x, int y) position = (
-                    (int)Math.Floor(agent.position.x + (Math.Cos(angleInRadians) + current)),
-                    (int)Math.Floor(agent.position.y + (Math.Sin(angleInRadians) + current))
-                    );
-
-                result += grid.safeGetValue(position.x, position.y);
-                current += lookaheadGrowth;
-            }
-
-            return result;
-        }
-
         private void updateAgents()
         {
-            foreach (Agent agent in agents)
+            var texture = GraphicsDevice.GetDefault().AllocateReadOnlyTexture2D<int>(grid.getData());
+            var agentsBuffer = GraphicsDevice.GetDefault().AllocateReadWriteTexture1D<Agent>(agents.ToArray());
+
+            GraphicsDevice.GetDefault().For(agents.Count, new
+                UpdateAgentsShader(agentsBuffer, texture, Width, Height));
+
+            agents = new List<Agent>(agentsBuffer.ToArray());
+            texture.Dispose();
+        }
+
+        private void drawAgents()
+        {
+            var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
+            var positions = GraphicsDevice.GetDefault().AllocateReadOnlyTexture1D<int2>(agents.Select(x => new int2((int)Math.Floor(x.position.x), (int)Math.Floor(x.position.y))).ToArray());
+
+            GraphicsDevice.GetDefault().For(agents.Count, new
+                DrawAgentsShader(positions, texture));
+
+            grid.setData(texture.ToArray());
+            texture.Dispose();
+        }
+
+        private void fade(int factor)
+        {
+            var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
+
+            GraphicsDevice.GetDefault().For(Width, Height, new
+                FadeShader(texture, factor));
+
+            grid.setData(texture.ToArray());
+            texture.Dispose();
+        }
+
+        [AutoConstructor]
+        public readonly partial struct FadeShader : IComputeShader
+        {
+            public readonly ReadWriteTexture2D<int> buffer;
+            public readonly int fadeFactor;
+
+            public void Execute()
             {
+                if (buffer[ThreadIds.XY] > 0)
+                {
+                    buffer[ThreadIds.XY] -= fadeFactor;
+                }
+            }
+        }
+
+        [AutoConstructor]
+        private readonly partial struct DrawAgentsShader : IComputeShader
+        {
+            public readonly ReadOnlyTexture1D<int2> positions;
+            public readonly ReadWriteTexture2D<int> buffer;
+
+            public void Execute()
+            {
+                buffer[positions[ThreadIds.X]] = 100;
+            }
+        }
+
+        [AutoConstructor]
+        private readonly partial struct UpdateAgentsShader : IComputeShader
+        {
+            public readonly ReadWriteTexture1D<Agent> agents;
+            public readonly ReadOnlyTexture2D<int> buffer;
+            public readonly int Width;
+            public readonly int Height;
+
+            private int countLookAhead(Agent agent, int angle, int lookCount, float lookaheadGrowth, float lookaheadStart)
+            {
+                int result = 0;
+
+                float current = lookaheadStart;
+                for (int i = 0; i < lookCount; i++)
+                {
+                    double angleInRadians = agent.rotation * (Math.PI / 180);
+
+                    Position position = new Position(
+                        (int)Math.Floor(agent.position.x + (Math.Cos(angleInRadians) + current)),
+                        (int)Math.Floor(agent.position.y + (Math.Sin(angleInRadians) + current))
+                        );
+
+                    int value = 0;
+                    if (position.x >= 0 && position.x < Width && position.y >= 0 && position.y < Height)
+                    {
+                        value = buffer[(int)agent.position.x, (int)agent.position.y];
+                    }
+                    result += value;
+                    current += lookaheadGrowth;
+                }
+
+                return result;
+            }
+
+            public void Execute()
+            {
+                var agent = agents[ThreadIds.X];
+
                 //Update rotation
                 int left = countLookAhead(agent, -45, 8, 1.5f, 1.2f);
                 int ahead = countLookAhead(agent, 0, 8, 1.5f, 1.2f);
@@ -106,40 +182,6 @@ namespace model
                 if ((int)Math.Floor(agent.position.y) < 0)
                 {
                     agent.position.y = Height - 1;
-                }
-            }
-        }
-
-        private void drawAgents()
-        {
-            foreach (Agent agent in agents)
-            {
-                this.grid.setValue((int)Math.Floor(agent.position.Item1), (int)Math.Floor(agent.position.Item2), 100);
-            }
-        }
-
-        private void fade(int factor)
-        {
-            var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
-
-            GraphicsDevice.GetDefault().For(Width, Height, new
-                FadeShader(texture, factor));
-
-            grid.setData(texture.ToArray());
-            texture.Dispose();
-        }
-
-        [AutoConstructor]
-        public readonly partial struct FadeShader : IComputeShader
-        {
-            public readonly ReadWriteTexture2D<int> buffer;
-            public readonly int fadeFactor;
-
-            public void Execute()
-            {
-                if (buffer[ThreadIds.XY] > 0)
-                {
-                    buffer[ThreadIds.XY] -= fadeFactor;
                 }
             }
         }
