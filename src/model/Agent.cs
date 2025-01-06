@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace model
 {
     [AutoConstructor]
-    public readonly struct Agent
+    public partial struct Agent
     {
-        public readonly float2 position;
-        public readonly float rotation;
+        public float2 position;
+        public float rotation;
     }
 }

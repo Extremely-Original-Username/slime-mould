@@ -189,7 +189,8 @@ namespace model
                     newPosition.Y = Height - 1;
                 }
 
-                agents[ThreadIds.X] = new Agent(newPosition, newRotation);
+                agents[ThreadIds.X].position = newPosition;
+                agents[ThreadIds.X].rotation = newRotation;
             }
         }
     }

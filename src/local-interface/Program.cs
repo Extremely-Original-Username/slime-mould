@@ -14,8 +14,8 @@ const string outDir = "results";
 const int width = 1920;
 const int height = 1080;
 const int fps = 20;
-const int length = 1;
-const int agents = 1000;
+const int length = 10;
+const int agents = 10000;
 
 const int steps = fps * length;
 
