@@ -127,18 +127,14 @@ namespace model
                 float current = lookaheadStart;
                 for (int i = 0; i < lookCount; i++)
                 {
-                    float angleInRadians = agent.rotation * (MathF.PI / 180);
+                    float angleInRadians = (agent.rotation + angle) * (MathF.PI / 180);
 
                     float2 position = new float2(
-                        MathF.Floor(agent.position.X + (MathF.Cos(angleInRadians) + current)),
-                        MathF.Floor(agent.position.Y + (MathF.Sin(angleInRadians) + current))
+                        (MathF.Floor(agent.position.X + (MathF.Cos(angleInRadians) * current)) + Width) % Width,
+                        (MathF.Floor(agent.position.Y + (MathF.Sin(angleInRadians) * current)) + Height) % Height
                         );
 
-                    int value = 0;
-                    if (position.X >= 0 && position.X < Width && position.Y >= 0 && position.Y < Height)
-                    {
-                        value = buffer[(int)agent.position.X, (int)agent.position.Y];
-                    }
+                    int value = buffer[new int2((int)MathF.Floor(position.X), (int)MathF.Floor(position.Y))];
                     result += value;
                     current += lookaheadGrowth;
                 }
@@ -148,46 +144,38 @@ namespace model
 
             public void Execute()
             {
+                const int looks = 50;
+                const float lookaheadGrowth = 1.2f;
+                const float lookaheadStart = 1f;
+                const float speed = 1;
+
                 var agent = agents[ThreadIds.X];
                 float newRotation = agent.rotation;
                 float2 newPosition = agent.position;
 
                 //Update rotation
-                int left = countLookAhead(agent, -45, 8, 1.5f, 1.2f);
-                int ahead = countLookAhead(agent, 0, 8, 1.5f, 1.2f);
-                int right = countLookAhead(agent, 45, 8, 1.5f, 1.2f);
+                int left = countLookAhead(agent, -45, looks, lookaheadGrowth, lookaheadStart);
+                int ahead = countLookAhead(agent, 0, looks, lookaheadGrowth, lookaheadStart);
+                int right = countLookAhead(agent, 45, looks, lookaheadGrowth, lookaheadStart);
 
-                if (left > right && left > ahead)
+                if (left > right)
                 {
-                    newRotation -= 10;
+                    newRotation -= 20;
                 }
-                if (right > left && right > ahead)
+                if (right > left)
                 {
-                    newRotation += 10;
+                    newRotation += 20;
                 }
 
-                newRotation %= 360;
+                newRotation = newRotation % 360;
 
                 //Update position
-                newPosition.X += MathF.Cos(agent.rotation);
-                newPosition.Y += MathF.Sin(agent.rotation);
+                float angleInRadians = agent.rotation * (MathF.PI / 180);
+                newPosition.X += MathF.Cos(angleInRadians) * speed;
+                newPosition.Y += MathF.Sin(angleInRadians) * speed;
 
-                if ((int)Math.Floor(newPosition.X) >= Width)
-                {
-                    newPosition.X = 0;
-                }
-                if ((int)Math.Floor(newPosition.Y) >= Height)
-                {
-                    newPosition.Y = 0;
-                }
-                if ((int)Math.Floor(newPosition.X) < 0)
-                {
-                    newPosition.X = Width - 1;
-                }
-                if ((int)Math.Floor(newPosition.Y) < 0)
-                {
-                    newPosition.Y = Height - 1;
-                }
+                newPosition.X = (newPosition.X + Width) % Width;
+                newPosition.Y = (newPosition.Y + Height) % Height;
 
                 agents[ThreadIds.X].position = newPosition;
                 agents[ThreadIds.X].rotation = newRotation;
