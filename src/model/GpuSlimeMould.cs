@@ -15,32 +15,30 @@ namespace model
         private ReadWriteTexture2D<int> grid;
         private ReadWriteBuffer<Agent> agents;
 
-        public int Width { get; }
-        public int Height { get; }
+        public SlimeMouldParams Parameters { get; }
 
-        public GpuSlimeMould(int width, int height, int agents)
+        public GpuSlimeMould(SlimeMouldParams parameters)
         {
-            this.Width = width;
-            this.Height = height;
+            this.Parameters = parameters;
 
             Random random = new Random();
             var startingAgents = new List<Agent>();
-            for (int i = 0; i < agents; i++)
+            for (int i = 0; i < Parameters.agents; i++)
             {
                 startingAgents.Add(new Agent(
-                    new float2(random.Next(0, width), random.Next(0, height)),
+                    new float2(random.Next(0, Parameters.width), random.Next(0, Parameters.height)),
                     random.Next(0, 360))
                     );
             }
 
-            var size = new int[width, height];
+            var size = new int[Parameters.width, Parameters.height];
             this.grid = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(size);
             this.agents = GraphicsDevice.GetDefault().AllocateReadWriteBuffer<Agent>(startingAgents.ToArray());
         }
 
         public MonoGrid getState()
         {
-            MonoGrid result = new MonoGrid(Width, Height);
+            MonoGrid result = new MonoGrid(Parameters.width, Parameters.height);
             result.setData(grid.ToArray());
 
             return result;
@@ -50,13 +48,7 @@ namespace model
         {
             drawAgents();
             updateAgents();
-            fade(1);
-        }
-
-        private void updateAgents()
-        {
-            GraphicsDevice.GetDefault().For(agents.Length, new
-                UpdateAgentsShader(agents, grid, Width, Height));
+            fade();
         }
 
         private void drawAgents()
@@ -65,10 +57,16 @@ namespace model
                 DrawAgentsShader(agents, grid));
         }
 
-        private void fade(int factor)
+        private void fade()
         {
             GraphicsDevice.GetDefault().For(grid.Width, grid.Height, new
-                FadeShader(grid, factor));
+                FadeShader(grid, Parameters.fadeFactor));
+        }
+
+        private void updateAgents()
+        {
+            GraphicsDevice.GetDefault().For(agents.Length, new
+                UpdateAgentsShader(agents, grid, Parameters.width, Parameters.height, Parameters.speed, Parameters.lookAngle, Parameters.lookCount, Parameters.lookGrowth, Parameters.turnStrength));
         }
 
         [AutoConstructor]
@@ -105,6 +103,9 @@ namespace model
             public readonly ReadWriteTexture2D<int> buffer;
             public readonly int Width;
             public readonly int Height;
+            public readonly float Speed;
+            public readonly int LookAngle, LookCount;
+            public readonly float LookGrowth, TurnStrength;
 
             private int countLookAhead(Agent agent, int angle, int lookCount, float lookaheadGrowth, float lookaheadStart)
             {
@@ -130,35 +131,32 @@ namespace model
 
             public void Execute()
             {
-                const int looks = 50;
-                const float lookaheadGrowth = 1.2f;
                 const float lookaheadStart = 1f;
-                const float speed = 1;
 
                 var agent = agents[ThreadIds.X];
                 float newRotation = agent.rotation;
                 float2 newPosition = agent.position;
 
                 //Update rotation
-                int left = countLookAhead(agent, -45, looks, lookaheadGrowth, lookaheadStart);
-                int ahead = countLookAhead(agent, 0, looks, lookaheadGrowth, lookaheadStart);
-                int right = countLookAhead(agent, 45, looks, lookaheadGrowth, lookaheadStart);
+                int left = countLookAhead(agent, -LookAngle, LookCount, LookGrowth, lookaheadStart);
+                int ahead = countLookAhead(agent, 0, LookCount, LookGrowth, lookaheadStart);
+                int right = countLookAhead(agent, LookAngle, LookCount, LookGrowth, lookaheadStart);
 
                 if (left > right)
                 {
-                    newRotation -= 20;
+                    newRotation -= TurnStrength;
                 }
                 if (right > left)
                 {
-                    newRotation += 20;
+                    newRotation += TurnStrength;
                 }
 
                 newRotation = newRotation % 360;
 
                 //Update position
                 float angleInRadians = agent.rotation * (MathF.PI / 180);
-                newPosition.X += MathF.Cos(angleInRadians) * speed;
-                newPosition.Y += MathF.Sin(angleInRadians) * speed;
+                newPosition.X += MathF.Cos(angleInRadians) * Speed;
+                newPosition.Y += MathF.Sin(angleInRadians) * Speed;
 
                 newPosition.X = (newPosition.X + Width) % Width;
                 newPosition.Y = (newPosition.Y + Height) % Height;

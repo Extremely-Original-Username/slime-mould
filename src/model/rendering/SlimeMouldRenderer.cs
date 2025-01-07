@@ -40,12 +40,12 @@ namespace model.rendering
                 onStep.Invoke(i);
                 slime.step();
 
-                Bitmap bitmap = new Bitmap(slime.Width, slime.Height);
+                Bitmap bitmap = new Bitmap(slime.Parameters.width, slime.Parameters.height);
                 MonoGrid state = slime.getState();
 
-                for (int y = 0; y < slime.Height; y++)
+                for (int y = 0; y < slime.Parameters.height; y++)
                 {
-                    for (int x = 0; x < slime.Width; x++)
+                    for (int x = 0; x < slime.Parameters.width; x++)
                     {
                         int value = (int)(2.55f * state.getValue(x, y));
                         bitmap.SetPixel(x, y, Color.FromArgb(255, value, value, value));
@@ -64,7 +64,7 @@ namespace model.rendering
             FFmpegLoader.FFmpegPath =
                 Environment.CurrentDirectory + @"\ffmpeg\ffmpeg-n6.0-34-g3d5edb89e7-win64-gpl-shared-6.0\bin";
 
-            var settings = new VideoEncoderSettings(width: slime.Width, height: slime.Height, framerate: fps, codec: VideoCodec.H264);
+            var settings = new VideoEncoderSettings(width: slime.Parameters.width, height: slime.Parameters.height, framerate: fps, codec: VideoCodec.H264);
             settings.EncoderPreset = EncoderPreset.Fast;
             settings.CRF = 20;
 
