@@ -94,7 +94,7 @@ namespace model
 
             public void Execute()
             {
-                buffer[(int)MathF.Floor(agents[ThreadIds.X].position.X), (int)MathF.Floor(agents[ThreadIds.X].position.Y)] = 100;
+                buffer[(int)MathF.Floor(agents[ThreadIds.X].position.Y), (int)MathF.Floor(agents[ThreadIds.X].position.X)] = 100;
             }
         }
 
@@ -120,7 +120,7 @@ namespace model
                         (MathF.Floor(agent.position.Y + (MathF.Sin(angleInRadians) * current)) + Height) % Height
                         );
 
-                    int value = buffer[new int2((int)MathF.Floor(position.X), (int)MathF.Floor(position.Y))];
+                    int value = buffer[new int2((int)MathF.Floor(position.Y), (int)MathF.Floor(position.X))];
                     result += value;
                     current += lookaheadGrowth;
                 }
