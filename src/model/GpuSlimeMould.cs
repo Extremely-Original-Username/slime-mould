@@ -12,8 +12,8 @@ namespace model
 {
     public partial class GpuSlimeMould : ISlimeMould
     {
-        private MonoGrid grid;
-        private List<Agent> agents;
+        private ReadWriteTexture2D<int> grid;
+        private ReadWriteBuffer<Agent> agents;
 
         public int Width { get; }
         public int Height { get; }
@@ -22,22 +22,28 @@ namespace model
         {
             this.Width = width;
             this.Height = height;
-            this.grid = new MonoGrid(width, height);
 
             Random random = new Random();
-            this.agents = new List<Agent>();
+            var startingAgents = new List<Agent>();
             for (int i = 0; i < agents; i++)
             {
-                this.agents.Add(new Agent(
+                startingAgents.Add(new Agent(
                     new float2(random.Next(0, width), random.Next(0, height)),
                     random.Next(0, 360))
                     );
             }
+
+            var size = new int[width, height];
+            this.grid = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(size);
+            this.agents = GraphicsDevice.GetDefault().AllocateReadWriteBuffer<Agent>(startingAgents.ToArray());
         }
 
         public MonoGrid getState()
         {
-            return new MonoGrid(grid);
+            MonoGrid result = new MonoGrid(Width, Height);
+            result.setData(grid.ToArray());
+
+            return result;
         }
 
         public void step()
@@ -49,40 +55,20 @@ namespace model
 
         private void updateAgents()
         {
-            var texture = GraphicsDevice.GetDefault().AllocateReadOnlyTexture2D<int>(grid.getData());
-
-            var agentsArray = agents.ToArray(); // Convert List<Agent> to array
-            var agentsBuffer = GraphicsDevice.GetDefault().AllocateReadWriteBuffer<Agent>(agentsArray.Length);
-            agentsBuffer.CopyFrom(agentsArray); // Ensure data is copied correctly
-
-            GraphicsDevice.GetDefault().For(agents.Count, new
-                UpdateAgentsShader(agentsBuffer, texture, Width, Height));
-
-            agents = new List<Agent>(agentsBuffer.ToArray());
-            texture.Dispose();
+            GraphicsDevice.GetDefault().For(agents.Length, new
+                UpdateAgentsShader(agents, grid, Width, Height));
         }
 
         private void drawAgents()
         {
-            var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
-            var positions = GraphicsDevice.GetDefault().AllocateReadOnlyTexture1D<int2>(agents.Select(x => new int2((int)Math.Floor(x.position.X), (int)Math.Floor(x.position.Y))).ToArray());
-
-            GraphicsDevice.GetDefault().For(agents.Count, new
-                DrawAgentsShader(positions, texture));
-
-            grid.setData(texture.ToArray());
-            texture.Dispose();
+            GraphicsDevice.GetDefault().For(agents.Length, new
+                DrawAgentsShader(agents, grid));
         }
 
         private void fade(int factor)
         {
-            var texture = GraphicsDevice.GetDefault().AllocateReadWriteTexture2D<int>(grid.getData());
-
-            GraphicsDevice.GetDefault().For(Width, Height, new
-                FadeShader(texture, factor));
-
-            grid.setData(texture.ToArray());
-            texture.Dispose();
+            GraphicsDevice.GetDefault().For(grid.Width, grid.Height, new
+                FadeShader(grid, factor));
         }
 
         [AutoConstructor]
@@ -103,12 +89,12 @@ namespace model
         [AutoConstructor]
         private readonly partial struct DrawAgentsShader : IComputeShader
         {
-            public readonly ReadOnlyTexture1D<int2> positions;
+            public readonly ReadWriteBuffer<Agent> agents;
             public readonly ReadWriteTexture2D<int> buffer;
 
             public void Execute()
             {
-                buffer[positions[ThreadIds.X]] = 100;
+                buffer[(int)MathF.Floor(agents[ThreadIds.X].position.X), (int)MathF.Floor(agents[ThreadIds.X].position.Y)] = 100;
             }
         }
 
@@ -116,7 +102,7 @@ namespace model
         private readonly partial struct UpdateAgentsShader : IComputeShader
         {
             public readonly ReadWriteBuffer<Agent> agents;
-            public readonly ReadOnlyTexture2D<int> buffer;
+            public readonly ReadWriteTexture2D<int> buffer;
             public readonly int Width;
             public readonly int Height;
 
