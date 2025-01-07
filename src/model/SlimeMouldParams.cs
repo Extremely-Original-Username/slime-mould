@@ -16,5 +16,21 @@ namespace model
         //Agent behaviour
         public int lookAngle, lookCount;
         public float lookGrowth, turnStrength;
+
+        public static SlimeMouldParams GetDefault()
+        {
+            return new SlimeMouldParams()
+            {
+                width = 1920,
+                height = 1080,
+                agents = 100000,
+                speed = 1,
+                fadeFactor = 2,
+                lookAngle = 45,
+                turnStrength = 20,
+                lookCount = 50,
+                lookGrowth = 1.2f
+            };
+        }
     }
 }
