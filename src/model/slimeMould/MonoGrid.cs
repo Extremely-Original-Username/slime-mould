@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace model
+namespace model.slimeMould
 {
     public class MonoGrid
     {
@@ -14,12 +14,12 @@ namespace model
 
         public MonoGrid(int width, int height)
         {
-            this.min = 0;
-            this.max = 100;
+            min = 0;
+            max = 100;
             this.width = width;
             this.height = height;
 
-            this.grid = new int[width, height];
+            grid = new int[width, height];
 
             for (int y = 0; y < height; y++)
             {
@@ -32,12 +32,12 @@ namespace model
 
         public MonoGrid(MonoGrid gridToCopy)
         {
-            this.min = gridToCopy.min;
-            this.max = gridToCopy.max;
-            this.width = gridToCopy.width;
-            this.height = gridToCopy.height;
+            min = gridToCopy.min;
+            max = gridToCopy.max;
+            width = gridToCopy.width;
+            height = gridToCopy.height;
 
-            this.grid = gridToCopy.grid;
+            grid = gridToCopy.grid;
         }
 
         public void setValue(int x, int y, int val)
@@ -45,14 +45,14 @@ namespace model
             validateBounds(x, y);
             validateGridValue(val);
 
-            this.grid[x, y] = val;
+            grid[x, y] = val;
         }
 
         public int getValue(int x, int y)
         {
             validateBounds(x, y);
 
-            return this.grid[x, y];
+            return grid[x, y];
         }
 
         public int safeGetValue(int x, int y)
@@ -61,7 +61,7 @@ namespace model
             {
                 validateBounds(x, y);
 
-                return this.grid[x, y];
+                return grid[x, y];
             }
             catch (IndexOutOfRangeException e) { }
 
@@ -70,14 +70,14 @@ namespace model
 
         public int[,] getData()
         {
-            return this.grid;
+            return grid;
         }
 
         public void setData(int[,] data)
         {
             if (data.GetLength(0) == grid.GetLength(0) && data.GetLength(1) == grid.GetLength(1))
             {
-                this.grid = data;
+                grid = data;
                 return;
             }
             throw new IndexOutOfRangeException("Data was an invalid shape");
@@ -94,7 +94,7 @@ namespace model
 
         private void validateGridValue(int val)
         {
-            if (val >= this.min && val <= this.max)
+            if (val >= min && val <= max)
             {
                 return;
             }

@@ -4,30 +4,27 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using model;
 using System.Drawing.Imaging;
 using FFMediaToolkit;
 using FFMediaToolkit.Encoding;
 using FFMediaToolkit.Graphics;
-using model.interfaces;
+using model.slimeMould;
 
 namespace model.rendering
 {
     public class SlimeMouldRenderer : ISlimeMouldRenderer
     {
         private int steps;
-        private int fps;
         private ISlimeMould slime;
         private PixelFormat format;
         private List<string> files;
-        private string outDir;
+        public SlimeMouldrendererParams Parameters { get; }
 
-        public SlimeMouldRenderer(int steps, int fps, ISlimeMould slimeMould, string outDir)
+        public SlimeMouldRenderer(SlimeMouldrendererParams parameters, ISlimeMould slimeMould)
         {
-            this.steps = steps;
-            this.fps = fps;
+            this.Parameters = parameters;
             this.slime = slimeMould;
-            this.outDir = outDir;
+            this.steps = parameters.fps * parameters.length;
 
             this.files = new List<string>();
             this.format = PixelFormat.Undefined;
@@ -52,8 +49,8 @@ namespace model.rendering
                     }
                 }
                 format = bitmap.PixelFormat;
-                bitmap.Save(outDir + "/" + i.ToString() + ".bmp");
-                files.Add(Environment.CurrentDirectory + @"\" + outDir + @"\" + i.ToString() + ".bmp");
+                bitmap.Save(Parameters.outDir + "/" + i.ToString() + ".bmp");
+                files.Add(Environment.CurrentDirectory + @"\" + Parameters.outDir + @"\" + i.ToString() + ".bmp");
                 bitmap.Dispose();
             }
             onComplete.Invoke();
@@ -64,12 +61,12 @@ namespace model.rendering
             FFmpegLoader.FFmpegPath =
                 Environment.CurrentDirectory + @"\ffmpeg\ffmpeg-n6.0-34-g3d5edb89e7-win64-gpl-shared-6.0\bin";
 
-            var settings = new VideoEncoderSettings(width: slime.Parameters.width, height: slime.Parameters.height, framerate: fps, codec: VideoCodec.H264);
+            var settings = new VideoEncoderSettings(width: slime.Parameters.width, height: slime.Parameters.height, framerate: Parameters.fps, codec: VideoCodec.H264);
             settings.EncoderPreset = EncoderPreset.Fast;
             settings.CRF = 20;
 
             onSave.Invoke();
-            var file = MediaBuilder.CreateContainer(Environment.CurrentDirectory + @"\out.mp4").WithVideo(settings).Create();
+            var file = MediaBuilder.CreateContainer(Environment.CurrentDirectory + "\\" + Parameters.outDir + @"\out.mp4").WithVideo(settings).Create();
             foreach (var inputFile in files)
             {
                 var binInputFile = File.ReadAllBytes(inputFile);
