@@ -11,10 +11,6 @@ Console.CursorVisible = false;
 Console.WriteLine("Starting sim generation...");
 
 const string outDir = "results";
-const int fps = 20;
-const int length = 20;
-const int steps = fps * length;
-
 if (Directory.Exists(outDir))
 {
     Directory.Delete(outDir, true);
@@ -22,11 +18,11 @@ if (Directory.Exists(outDir))
 Directory.CreateDirectory(outDir);
 
 ISlimeMould slime = new GpuSlimeMould(SlimeMouldParams.GetDefault());
-SlimeMouldRenderer renderer = new SlimeMouldRenderer(SlimeMouldrendererParams.GetDefault(),slime);
+SlimeMouldRenderer renderer = new SlimeMouldRenderer(SlimeMouldrendererParams.GetDefault(), slime);
 
 renderer.generateFrames((i) =>
 {
-    Console.Write("\nStepping (" + (i + 1).ToString() + "/" + steps + ")\n");
+    Console.Write("\nStepping (" + (i + 1).ToString() + "/" + renderer.Parameters.length * renderer.Parameters.fps + ")\n");
     Console.SetCursorPosition(0, Console.GetCursorPosition().Top - 2);
 },
 () => Console.SetCursorPosition(0, Console.GetCursorPosition().Top + 3));

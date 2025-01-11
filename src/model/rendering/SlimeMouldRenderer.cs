@@ -75,7 +75,7 @@ namespace model.rendering
         public void saveVideo(Action onSave)
         {
             FFmpegLoader.FFmpegPath =
-                Environment.CurrentDirectory + @"\ffmpeg\ffmpeg-n6.0-34-g3d5edb89e7-win64-gpl-shared-6.0\bin";
+                Environment.CurrentDirectory + @"\ffmpeg\ffmpeg-n6.0.1-win64-gpl-shared-6.0\bin";
 
             var settings = new VideoEncoderSettings(width: slime.Parameters.width, height: slime.Parameters.height, framerate: Parameters.fps, codec: VideoCodec.H264);
             settings.EncoderPreset = EncoderPreset.Fast;
