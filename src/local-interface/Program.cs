@@ -25,7 +25,11 @@ renderer.generateFrames((i) =>
     Console.Write("\nStepping (" + (i + 1).ToString() + "/" + renderer.Parameters.length * renderer.Parameters.fps + ")\n");
     Console.SetCursorPosition(0, Console.GetCursorPosition().Top - 2);
 },
-() => Console.SetCursorPosition(0, Console.GetCursorPosition().Top + 3));
+() => { 
+    Console.SetCursorPosition(0, Console.GetCursorPosition().Top + 3);
+    Console.WriteLine("Waiting for threads to complete...");
+},
+() => Console.Write(""));
 renderer.saveVideo(() =>
 {
     Console.WriteLine("Saving video...");

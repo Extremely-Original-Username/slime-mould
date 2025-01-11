@@ -30,25 +30,29 @@ namespace model.rendering
             this.format = PixelFormat.Undefined;
         }
 
-        public void generateFrames(Action<int> onStep, Action onComplete)
+        public void generateFrames(Action<int> beforeStep, Action whileAwaitingCompletion, Action onComplete)
         {
             List<Thread> threads = new List<Thread>();
             for (int i = 0; i < steps; i++)
             {
-                onStep.Invoke(i);
+                beforeStep.Invoke(i);
                 slime.step();
 
-                threads.Add(saveImage(slime.getState(), i));
+                string filename = Parameters.outDir + "/" + i.ToString() + ".bmp";
+                threads.Add(saveImage(slime.getState(), i, filename));
+                files.Add(Environment.CurrentDirectory + @"\" + filename);
             }
 
-            while (threads.Where((x) => x.IsAlive).Count() > 0)
+            whileAwaitingCompletion.Invoke();
+            foreach (Thread thread in threads)
             {
-                Thread.Sleep(100);
+                thread.Join();
             }
+
             onComplete.Invoke();
         }
 
-        private Thread saveImage(MonoGrid image, int index)
+        private Thread saveImage(MonoGrid image, int index, string filename)
         {
             var result = new Thread(() =>
             {
@@ -63,8 +67,7 @@ namespace model.rendering
                     }
                 }
                 format = bitmap.PixelFormat;
-                bitmap.Save(Parameters.outDir + "/" + index.ToString() + ".bmp");
-                files.Add(Environment.CurrentDirectory + @"\" + Parameters.outDir + @"\" + index.ToString() + ".bmp");
+                bitmap.Save(filename);
                 bitmap.Dispose();
             });
 
@@ -82,7 +85,7 @@ namespace model.rendering
             settings.CRF = 20;
 
             onSave.Invoke();
-            var file = MediaBuilder.CreateContainer(Environment.CurrentDirectory + "\\" + Parameters.outDir + @"\out.mp4").WithVideo(settings).Create();
+            var file = MediaBuilder.CreateContainer(Environment.CurrentDirectory + "\\" + Parameters.outDir + @"\_out.mp4").WithVideo(settings).Create();
             foreach (var inputFile in files)
             {
                 var binInputFile = File.ReadAllBytes(inputFile);

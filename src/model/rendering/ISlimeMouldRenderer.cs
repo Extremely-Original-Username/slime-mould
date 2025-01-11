@@ -9,7 +9,7 @@ namespace model.rendering
     public interface ISlimeMouldRenderer
     {
         public SlimeMouldrendererParams Parameters { get; }
-        public void generateFrames(Action<int> onStep, Action onComplete);
+        public void generateFrames(Action<int> beforeStep, Action whileAwaitingCompletion, Action onComplete);
         public void saveVideo(Action onSave);
     }
 }
