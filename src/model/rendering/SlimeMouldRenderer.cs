@@ -32,28 +32,44 @@ namespace model.rendering
 
         public void generateFrames(Action<int> onStep, Action onComplete)
         {
+            List<Thread> threads = new List<Thread>();
             for (int i = 0; i < steps; i++)
             {
                 onStep.Invoke(i);
                 slime.step();
 
+                threads.Add(saveImage(slime.getState(), i));
+            }
+
+            while (threads.Where((x) => x.IsAlive).Count() > 0)
+            {
+                Thread.Sleep(100);
+            }
+            onComplete.Invoke();
+        }
+
+        private Thread saveImage(MonoGrid image, int index)
+        {
+            var result = new Thread(() =>
+            {
                 Bitmap bitmap = new Bitmap(slime.Parameters.width, slime.Parameters.height);
-                MonoGrid state = slime.getState();
 
                 for (int y = 0; y < slime.Parameters.height; y++)
                 {
                     for (int x = 0; x < slime.Parameters.width; x++)
                     {
-                        int value = (int)(2.55f * state.getValue(x, y));
+                        int value = (int)(2.55f * image.getValue(x, y));
                         bitmap.SetPixel(x, y, Color.FromArgb(255, value, value, value));
                     }
                 }
                 format = bitmap.PixelFormat;
-                bitmap.Save(Parameters.outDir + "/" + i.ToString() + ".bmp");
-                files.Add(Environment.CurrentDirectory + @"\" + Parameters.outDir + @"\" + i.ToString() + ".bmp");
+                bitmap.Save(Parameters.outDir + "/" + index.ToString() + ".bmp");
+                files.Add(Environment.CurrentDirectory + @"\" + Parameters.outDir + @"\" + index.ToString() + ".bmp");
                 bitmap.Dispose();
-            }
-            onComplete.Invoke();
+            });
+
+            result.Start();
+            return result;
         }
 
         public void saveVideo(Action onSave)
