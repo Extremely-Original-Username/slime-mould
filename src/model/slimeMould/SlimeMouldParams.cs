@@ -39,7 +39,7 @@ namespace model.slimeMould
                 turnStrength = 20,
                 lookCount = 50,
                 lookGrowth = 1.2f,
-                followWeight = 1000
+                followWeight = 2
             };
         }
     }
