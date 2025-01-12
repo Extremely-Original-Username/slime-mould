@@ -29,7 +29,7 @@ namespace model.slimeMould
                 {
                     Random random = new Random();
                     return new Agent(
-                        new float2(random.Next(0, width / 3), random.Next(0, height / 3)),
+                        new float2(random.Next(0, width), random.Next(0, height)),
                         random.Next(0, 360),
                         random.Next());
                 },
