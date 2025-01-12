@@ -15,7 +15,7 @@ namespace model.slimeMould
         public float speed;
         //Agent behaviour
         public int lookAngle, lookCount;
-        public float lookGrowth, turnStrength;
+        public float lookGrowth, turnStrength, followWeight;
 
         public static SlimeMouldParams GetDefault()
         {
@@ -29,7 +29,8 @@ namespace model.slimeMould
                 lookAngle = 45,
                 turnStrength = 20,
                 lookCount = 50,
-                lookGrowth = 1.2f
+                lookGrowth = 1.2f,
+                followWeight = 10
             };
         }
     }

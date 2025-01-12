@@ -27,7 +27,8 @@ namespace model
             {
                 startingAgents.Add(new Agent(
                     new float2(random.Next(0, Parameters.width), random.Next(0, Parameters.height)),
-                    random.Next(0, 360))
+                    random.Next(0, 360),
+                    random.Next())
                     );
             }
 
@@ -66,7 +67,7 @@ namespace model
         private void updateAgents()
         {
             GraphicsDevice.GetDefault().For(agents.Length, new
-                UpdateAgentsShader(agents, grid, Parameters.width, Parameters.height, Parameters.speed, Parameters.lookAngle, Parameters.lookCount, Parameters.lookGrowth, Parameters.turnStrength));
+                UpdateAgentsShader(agents, grid, Parameters.width, Parameters.height, Parameters.speed, Parameters.lookAngle, Parameters.lookCount, Parameters.lookGrowth, Parameters.turnStrength, Parameters.followWeight));
         }
 
         [AutoConstructor]
@@ -105,7 +106,7 @@ namespace model
             public readonly int Height;
             public readonly float Speed;
             public readonly int LookAngle, LookCount;
-            public readonly float LookGrowth, TurnStrength;
+            public readonly float LookGrowth, TurnStrength, followWeight;
 
             private int countLookAhead(Agent agent, int angle, int lookCount, float lookaheadGrowth, float lookaheadStart)
             {
@@ -142,11 +143,27 @@ namespace model
                 int ahead = countLookAhead(agent, 0, LookCount, LookGrowth, lookaheadStart);
                 int right = countLookAhead(agent, LookAngle, LookCount, LookGrowth, lookaheadStart);
 
-                if (left > right)
+                if (left > ahead && left > right)
+                {
+                    left *= (int)followWeight;
+                }
+                else if (right > ahead && right > left)
+                {
+                    right *= (int)followWeight;
+                }
+                else
+                {
+                    ahead *= (int)followWeight;
+                }
+
+                int randomMax = left + ahead + right;
+                int chosen = (int)(agent.randomSeed + agent.position.X + agent.position.Y + agent.rotation) % randomMax;
+
+                if (chosen <= left)
                 {
                     newRotation -= TurnStrength;
                 }
-                if (right > left)
+                if (chosen >= left + ahead)
                 {
                     newRotation += TurnStrength;
                 }

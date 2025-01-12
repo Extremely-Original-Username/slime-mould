@@ -12,5 +12,6 @@ namespace model
     {
         public float2 position;
         public float rotation;
+        public int randomSeed;
     }
 }
