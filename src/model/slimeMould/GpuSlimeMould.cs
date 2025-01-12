@@ -25,11 +25,7 @@ namespace model
             var startingAgents = new List<Agent>();
             for (int i = 0; i < Parameters.agents; i++)
             {
-                startingAgents.Add(new Agent(
-                    new float2(random.Next(0, Parameters.width), random.Next(0, Parameters.height)),
-                    random.Next(0, 360),
-                    random.Next())
-                    );
+                startingAgents.Add(parameters.startingAgentSetup.Invoke(parameters.width, parameters.height));
             }
 
             var size = new int[Parameters.width, Parameters.height];

@@ -10,6 +10,7 @@ namespace model.slimeMould
     {
         //Main options
         public int width, height, agents;
+        public Func<int, int, Agent> startingAgentSetup;
         //Agent options
         public int fadeFactor;
         public float speed;
@@ -24,6 +25,14 @@ namespace model.slimeMould
                 width = 1920,
                 height = 1080,
                 agents = 100000,
+                startingAgentSetup = (width, height) =>
+                {
+                    Random random = new Random();
+                    return new Agent(
+                        new float2(random.Next(0, width), random.Next(0, height)),
+                        random.Next(0, 360),
+                        random.Next());
+                },
                 speed = 1,
                 fadeFactor = 2,
                 lookAngle = 45,
