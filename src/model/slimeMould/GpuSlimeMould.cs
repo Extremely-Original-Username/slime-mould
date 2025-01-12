@@ -63,7 +63,11 @@ namespace model
         private void updateAgents()
         {
             GraphicsDevice.GetDefault().For(agents.Length, new
-                UpdateAgentsShader(agents, grid, Parameters.width, Parameters.height, Parameters.speed, Parameters.lookAngle, Parameters.lookCount, Parameters.lookGrowth, Parameters.turnStrength, Parameters.followWeight));
+                UpdateAgentsShader(agents, grid, 
+                Parameters.width, Parameters.height, 
+                Parameters.speed, Parameters.lookAngle, 
+                Parameters.lookCount, Parameters.lookGrowth, 
+                Parameters.turnStrength, Parameters.followWeight));
         }
 
         [AutoConstructor]
@@ -142,6 +146,7 @@ namespace model
                 if (left > ahead && left > right)
                 {
                     left *= (int)followWeight;
+
                 }
                 else if (right > ahead && right > left)
                 {
