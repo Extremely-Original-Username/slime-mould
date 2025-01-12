@@ -29,7 +29,7 @@ namespace model.slimeMould
                 {
                     Random random = new Random();
                     return new Agent(
-                        new float2(random.Next(0, width), random.Next(0, height)),
+                        new float2(random.Next(0, width / 3), random.Next(0, height / 3)),
                         random.Next(0, 360),
                         random.Next());
                 },
@@ -39,7 +39,7 @@ namespace model.slimeMould
                 turnStrength = 20,
                 lookCount = 50,
                 lookGrowth = 1.2f,
-                followWeight = 10
+                followWeight = 1000
             };
         }
     }

@@ -145,16 +145,19 @@ namespace model
 
                 if (left > ahead && left > right)
                 {
-                    left *= (int)followWeight;
+                    ahead /= (int)followWeight;
+                    right /= (int)followWeight;
 
                 }
                 else if (right > ahead && right > left)
                 {
-                    right *= (int)followWeight;
+                    ahead /= (int)followWeight;
+                    left /= (int)followWeight;
                 }
                 else
                 {
-                    ahead *= (int)followWeight;
+                    left /= (int)followWeight;
+                    right /= (int)followWeight;
                 }
 
                 int randomMax = left + ahead + right;
