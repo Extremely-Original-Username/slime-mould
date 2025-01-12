@@ -62,8 +62,13 @@ namespace model.rendering
                 {
                     for (int x = 0; x < slime.Parameters.width; x++)
                     {
-                        int value = (int)(2.55f * image.getValue(x, y));
-                        bitmap.SetPixel(x, y, Color.FromArgb(255, value, value, value));
+                        int value = image.getValue(x, y);
+                        bitmap.SetPixel(x, y, Color.FromArgb(
+                            interpolate(Parameters.background.A, Parameters.foreground.A, value), 
+                            interpolate(Parameters.background.R, Parameters.foreground.R, value),
+                            interpolate(Parameters.background.G, Parameters.foreground.G, value),
+                            interpolate(Parameters.background.B, Parameters.foreground.B, value)
+                            ));
                     }
                 }
                 format = bitmap.PixelFormat;
@@ -73,6 +78,11 @@ namespace model.rendering
 
             result.Start();
             return result;
+        }
+
+        private int interpolate(int start, int end, int position)
+        {
+            return start + (end - start) / 100 * position;
         }
 
         public void saveVideo(Action onSave)
