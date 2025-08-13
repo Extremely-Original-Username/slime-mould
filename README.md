@@ -1,7 +1,7 @@
 ## My slime mould sim generator!
 This is a revamp of an old unity project re-done in C# (and is a console app, so not the most user-friendly).
 I have always loved slime mould simulations so am happy to finally have a proprly parameterised version!
-**This will also become obselete when the generic simulation renderer is completed.**
+**This will also become obsolete when the generic simulation renderer is completed.**
 
 The result is compiled into a video under the output directory, once the simulation completes.
 https://github.com/user-attachments/assets/fac1037d-94ce-474b-9d24-0ad7b074fd3a
